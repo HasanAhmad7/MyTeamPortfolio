@@ -1,54 +1,51 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Home, 
-  Layers, 
-  Cpu, 
-  MessageSquare, 
-  Command,
-  Activity
+import {
+  Home,
+  Layers,
+  Cpu,
+  MessageSquare,
+  Zap,
+  Circle
 } from 'lucide-react';
 
-// --- Sub-component for individual links to handle local mouse tracking ---
-const SideNavLink = ({ link }: { link: any }) => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const linkRef = useRef<HTMLAnchorElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!linkRef.current) return;
-    const rect = linkRef.current.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
+// --- Sub-component for individual links ---
+const SideNavLink = ({ link, isActive }: { link: any; isActive: boolean }) => {
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <a 
-      ref={linkRef}
-      onMouseMove={handleMouseMove}
-      href={link.h} 
-      className="group relative flex flex-col items-center py-2"
+    <a
+      href={link.h}
+      className="group relative flex items-center justify-center"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Radial Glow - Matches Project Card Logic */}
-      <div 
-        className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl z-0"
-        style={{
-          background: `radial-gradient(60px circle at ${mousePos.x}px ${mousePos.y}px, rgba(59, 130, 246, 0.15), transparent 80%)`,
-        }}
-      />
+      {/* Active Indicator Dot */}
+      <div className={`absolute -left-1.5 w-1.5 h-1.5 rounded-full bg-gradient-to-b from-blue-400 to-cyan-400 transition-all duration-500 ${isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`} />
 
-      <div className="relative z-10 p-3 rounded-2xl text-slate-500 group-hover:text-blue-400 group-hover:bg-blue-500/10 transition-all duration-300 border border-transparent group-hover:border-blue-500/20">
-        <link.i size={20} />
+      {/* Icon Container */}
+      <div className={`relative p-3 rounded-2xl transition-all duration-500 ${isActive
+          ? 'bg-gradient-to-br from-blue-500/30 to-cyan-500/20 text-blue-300 shadow-lg shadow-blue-500/30'
+          : 'text-slate-400 hover:bg-slate-700/50 hover:text-blue-300'
+        }`}>
+        <link.i size={20} strokeWidth={isActive ? 2 : 1.5} />
       </div>
-      
-      {/* Cinematic Tooltip */}
-      <div className="absolute left-full ml-4 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none translate-x-2 group-hover:translate-x-0 z-50">
-        <div className="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl shadow-2xl">
-          <span className="text-[10px] font-bold text-blue-400 tracking-[0.2em] uppercase whitespace-nowrap">
-            {link.n}
-          </span>
+
+      {/* Premium Tooltip */}
+      <div className={`absolute left-full ml-5 transition-all duration-300 pointer-events-none z-50 ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+        <div className="relative">
+          {/* Tooltip Arrow */}
+          <div className="absolute right-full top-1/2 -translate-y-1/2 mr-px">
+            <div className="w-0 h-0 border-t-[6px] border-b-[6px] border-r-[6px] border-transparent border-r-slate-800/95" />
+          </div>
+
+          {/* Tooltip Content */}
+          <div className="bg-slate-800/95 backdrop-blur-xl border border-slate-600/40 px-4 py-2 rounded-xl shadow-2xl">
+            <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300 tracking-wider uppercase whitespace-nowrap">
+              {link.n}
+            </span>
+          </div>
         </div>
       </div>
     </a>
@@ -58,7 +55,8 @@ const SideNavLink = ({ link }: { link: any }) => {
 // --- Main SideNav Component ---
 const SideNav = ({ isVisible = true }: { isVisible?: boolean } = {}) => {
   const [time, setTime] = useState("");
-  
+  const [activeSection, setActiveSection] = useState("System");
+
   const links = [
     { n: 'System', h: '#home', i: Home },
     { n: 'Projects', h: '#work', i: Layers },
@@ -74,40 +72,63 @@ const SideNav = ({ isVisible = true }: { isVisible?: boolean } = {}) => {
   }, []);
 
   return (
-    <nav className={`fixed left-0 top-0 h-full w-20 md:w-24 bg-slate-900/60 backdrop-blur-xl border-r border-slate-800/50 z-[100] flex flex-col items-center py-10 transition-all duration-[1200ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] overflow-hidden ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}`}>
-      
-      {/* Background Focus Glow */}
-      <div className={`absolute inset-0 bg-blue-600/[0.03] transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} />
+    <nav className={`fixed left-4 md:left-6 top-1/2 -translate-y-1/2 w-16 md:w-[72px] bg-gradient-to-b from-slate-900/90 via-slate-950/90 to-black/90 backdrop-blur-2xl rounded-full border border-slate-700/40 z-[100] flex flex-col items-center py-6 transition-all duration-[1200ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] shadow-2xl shadow-black/60 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}`}>
 
-      {/* Vertical Light Sweep Animation */}
-      <div className={`absolute -inset-y-full w-full bg-gradient-to-b from-transparent via-white/5 to-transparent -skew-y-12 transition-all duration-[2000ms] ease-in-out pointer-events-none ${isVisible ? 'translate-y-[200%]' : '-translate-y-full'}`} />
+      {/* Inner Glow */}
+      <div className="absolute inset-[1px] bg-gradient-to-b from-blue-500/5 via-transparent to-cyan-500/5 rounded-full pointer-events-none" />
+
+      {/* Ambient Background Glow */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-full h-1/3 bg-blue-500/20 blur-[60px] rounded-full pointer-events-none" />
 
       {/* Logo Section */}
-      <div className="mb-16 relative group z-10">
-        <div className="absolute inset-0 bg-blue-500/10 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="relative w-12 h-12 border border-blue-500/20 rounded-2xl flex items-center justify-center bg-blue-500/5 cursor-pointer transition-all duration-500 group-hover:border-blue-400/40 shadow-2xl shadow-blue-500/10">
-          <Command size={22} className="text-blue-400 group-hover:rotate-90 transition-transform duration-700" />
+      <div className="mb-8 relative group z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/30 to-cyan-500/30 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700" />
+
+        {/* Logo Container */}
+        <div className="relative w-11 h-11 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-400/30 cursor-pointer transition-all duration-700 group-hover:border-blue-400/60 group-hover:scale-110 group-hover:rotate-12 shadow-lg shadow-blue-500/25">
+          <Zap size={22} className="text-blue-400 group-hover:text-cyan-300 transition-all duration-700" strokeWidth={2.5} />
         </div>
       </div>
 
-      {/* Navigation Links Grid */}
-      <div className="flex-1 flex flex-col gap-8 z-10 w-full px-4">
+      {/* Divider */}
+      <div className="w-8 h-px bg-gradient-to-r from-transparent via-slate-600/50 to-transparent mb-6" />
+
+      {/* Navigation Links */}
+      <div className="flex-1 flex flex-col gap-3 z-10 items-center justify-center">
         {links.map((link) => (
-          <SideNavLink key={link.n} link={link} />
+          <SideNavLink
+            key={link.n}
+            link={link}
+            isActive={activeSection === link.n}
+          />
         ))}
       </div>
 
-      {/* Status Bar & Vertical Clock */}
-      <div className="mt-auto flex flex-col items-center gap-12 pt-10 border-t border-slate-800/50 z-10 w-full">
-        <div className="flex flex-col items-center gap-3">
-           <Activity size={14} className="text-blue-500/40 animate-pulse" />
-           <span className="text-[8px] text-slate-500 font-bold uppercase tracking-[0.4em] [writing-mode:vertical-lr] rotate-180">
-            Node_Online
+      {/* Divider */}
+      <div className="w-8 h-px bg-gradient-to-r from-transparent via-slate-600/50 to-transparent mt-6 mb-6" />
+
+      {/* Bottom Section */}
+      <div className="flex flex-col items-center gap-5 z-10">
+        {/* Status Indicator */}
+        <div className="relative group">
+          <Circle size={8} className="text-emerald-400 fill-emerald-400 animate-pulse" />
+          <div className="absolute inset-0 bg-emerald-400/60 blur-md rounded-full animate-pulse" />
+
+          {/* Status Tooltip */}
+          <div className="absolute left-full ml-5 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap">
+            <div className="bg-slate-800/95 backdrop-blur-xl border border-slate-600/40 px-3 py-1.5 rounded-lg shadow-xl">
+              <span className="text-[10px] font-bold text-emerald-400 tracking-wider uppercase">Online</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Digital Clock */}
+        <div className="relative group cursor-default">
+          <div className="absolute inset-0 bg-blue-500/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full" />
+          <span className="relative text-[9px] text-transparent bg-clip-text bg-gradient-to-b from-slate-300 to-slate-500 tabular-nums font-bold tracking-tight [writing-mode:vertical-lr] rotate-180">
+            {time || "00:00"}
           </span>
         </div>
-        <span className="text-[10px] text-slate-600 tabular-nums font-medium tracking-widest [writing-mode:vertical-lr] rotate-180 mb-4">
-          {time || "00:00:00"}
-        </span>
       </div>
     </nav>
   );
